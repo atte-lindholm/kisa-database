@@ -28,13 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $swimmerResult = mysqli_query($conn, $swimmerQuery);
     }
 }
-
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Swimmer Competition Selection</title>
+  <title>Swimmer Competition page</title>
   <style>
     table {
       border-collapse: collapse;
@@ -46,6 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       text-align: left;
       border-bottom: 1px solid #ddd;
     }
+    
+    th:first-child, td:first-child {
+      width: auto;
+      white-space: nowrap;
+    }
+    
+    th:not(:first-child), td:not(:first-child) {
+      width: calc(100% / 6 + 5px);
+    }
   </style>
 </head>
 <body>
@@ -56,16 +64,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       // Loop through the competition results and create option elements
       while ($row = mysqli_fetch_assoc($competitionResult)) {
         $competitionName = $row['nimi'];
-        echo "<option value='$competitionName'>$competitionName</option>";
+        $selected = ($selectedCompetition === $competitionName) ? 'selected' : '';
+        echo "<option value='$competitionName' $selected>$competitionName</option>";
       }
       ?>
     </select>
     <button type="submit">Submit</button>
   </form>
 
-  <br>
-
   <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['competitionSelect'])) { ?>
+    <?php
+    // Get the competition details
+    $competitionDetailsQuery = "SELECT * FROM kilpailu WHERE nimi = '$selectedCompetition'";
+    $competitionDetailsResult = mysqli_query($conn, $competitionDetailsQuery);
+    $competitionDetails = mysqli_fetch_assoc($competitionDetailsResult);
+    ?>
+
+    <br>
+
+    <table>
+      <tr>
+        <th>Competition</th>
+        <th>Address</th>
+        <th>Date</th>
+        <th>Järjestäjä</th>
+        <th>allas</th>
+      </tr>
+      <tr>
+        <td><?php echo $competitionDetails['nimi']; ?></td>
+        <td><?php echo $competitionDetails['osoite']; ?></td>
+        <td><?php echo $competitionDetails['päivämäärä']; ?></td>
+        <td><?php echo $competitionDetails['järjestäjä']; ?></td>
+        <td><?php echo $competitionDetails['allas']; ?></td>
+
+
+      </tr>
+    </table>
+
+    <br>
+
     <form method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
       <label for="swimmerSelect">Select Swimmer:</label>
       <select name="swimmerSelect" id="swimmerSelect">
@@ -127,8 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     }
     mysqli_close($conn);
-
     ?>
   <?php } ?>
+
 </body>
 </html>
